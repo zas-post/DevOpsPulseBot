@@ -19,7 +19,7 @@ RUN adduser --disabled-password --gecos "" botuser
 COPY . .
 
 # Назначаем права пользователю botuser на рабочую директорию
-RUN chown -r botuser:botuser /app
+RUN chown -R botuser:botuser /app
 
 # Переключаемся на безопасного пользователя
 USER botuser
