@@ -43,3 +43,58 @@ DevOpsPulseBot/
 ├── Dockerfile           # Инструкция для сборки контейнера
 ├── main.py              # Точка входа (Запуск Продюсера и Консьюмера)
 └── requirements.txt     # Зависимости проекта
+```
+
+### ⚙️ Настройка окружения (.env)
+
+Создайте файл ```.env``` в корневой директории бота и заполните следующие переменные:
+
+#Фрагмент кода
+```
+BOT_TOKEN=1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ  # Токен от BotFather
+ADMIN_ID=987654321                             # Ваш личный Telegram ID
+CHANNEL_ID=-1001234567890                       # ID канала, куда уйдут одобренные посты
+```
+### 🐋 Развертывание в Docker Compose
+Сервис бота полностью готов для интеграции в существующий ```docker-compose.yml``` на сервере (например, под управлением Proxmox).
+
+1. Добавление сервиса
+Добавьте следующий блок в ваш файл ```docker-compose.yml```:
+
+```Bash
+YAML
+services:
+  devops-pulse-bot:
+    build:
+      context: ./DevOpsPulseBot
+      dockerfile: Dockerfile
+    container_name: devops_pulse_bot
+    restart: always
+    environment:
+      - PYTHONIOENCODING=utf-8   # Защита от кракозябр в логах контейнера
+      - PYTHONUNBUFFERED=1       # Мгновенный вывод логов без буферизации
+    volumes:
+      # Монтируем файл базы данных локально, чтобы не терять историю при перезапусках
+      - ./DevOpsPulseBot/bot_database.db:/app/bot_database.db
+    env_file:
+      - ./DevOpsPulseBot/.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+2. Запуск контейнера
+Выполните команду в директории с файлом ```docker-compose.yml```:
+
+```Bash
+docker compose up -d --build devops-pulse-bot
+```
+Логи работы консьюмера и продюсера будут доступны стандартным способом через docker logs devops_pulse_bot или через веб-панель Dozzle на порту 9999.
+
+### 🛡 Безопасность и Оптимизация
+Запуск от non-root пользователя: Внутри ```Dockerfile``` автоматически создается системный пользователь botuser. Бот не имеет прав root внутри контейнера, что защищает хост-систему (Proxmox).
+
+Чистый образ: Благодаря .dockerignore, файлы кэша пятона (__pycache__), локальные тестовые базы данных и файлы сред разработки (.json, .pyc) не попадают в итоговый Docker-образ.
+
+Логирование: Вывод логов оптимизирован для ротации средствами Docker (файлы бьются по 10 МБ, хранится не более 3 копий).
