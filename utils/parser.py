@@ -14,7 +14,7 @@ async def fetch_rss_posts() -> List[dict]:
         {"name": "VC_Технологии", "url": "https://vc.ru/rss"},
         # Англоязычные медиа-платформы:
         {"name": "DZone_DevOps", "url": "https://dzone.com/feed/devops"},
-        {"name": "DevTo_DevOps", "url": "https://dev.to/feed/tag/devops"},
+        {"name": "DZone_DevOps", "url": "https://dzone.com/feeds/active/devops.rss"},
         {"name": "DevTo_Python", "url": "https://dev.to/feed/tag/python"},
     ]
 
